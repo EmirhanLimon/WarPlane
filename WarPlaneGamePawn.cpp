@@ -167,22 +167,25 @@ void AWarPlaneGamePawn::EngineBoostTimer()
 	if(EngineBoostTime <= 19.9f && EngineControl == false)
 	{
 		EngineBoostTime = EngineBoostTime + 0.1f;
-		OverHeating = true;
+		
 	}
 	if(EngineBoostTime >= 1.f && EngineControl)
 	{
 		EngineBoostTime = EngineBoostTime - 0.1f;
+		if(EngineBoostTime <= 1.1)
+		{
+			OverHeating = true;
+			GetWorldTimerManager().SetTimer(Timer2, this, &AWarPlaneGamePawn::EngineOverHeat, 19.f, true);
+			
+		}
 	}
-	if(EngineBoostTime == 1)
-	{
-		GetWorldTimerManager().SetTimer(Timer2, this, &AWarPlaneGamePawn::EngineOverHeat, 19.f, true);
-	}
+	
 	GetWorldTimerManager().SetTimer(Timer, this, &AWarPlaneGamePawn::EngineBoostTimer, 0.1f, true);
 }
 
 void AWarPlaneGamePawn::EngineOverHeat()
 {
-	
+	OverHeating = false;
 }
 
 
