@@ -36,11 +36,13 @@ protected:
 	virtual void SetupPlayerInputComponent(class UInputComponent* InputComponent) override; // Allows binding actions/axes to functions
 	
 	/** Bound to the horizontal axis */
-	void MoveRightInput(float Val);
+	//void MoveRightInput(float Val);
 	
 	void EngineBoostInput(float Val);
 
 	void SlowDownInput(float Val);
+
+	void RightRotationInput(float Val);
 
 	void EngineBoostTimer();
 
@@ -87,6 +89,15 @@ private:
 
 	FTimerHandle Timer;
 	FTimerHandle Timer2;
+
+	UPROPERTY(EditAnywhere, Category = Movement)
+	float PitchValue;
+
+	UPROPERTY(EditAnywhere, Category = Movement)
+	float YawValue;
+
+	UPROPERTY(EditAnywhere, Category = Movement)
+	float RollValue;
 public:
 	/** Returns PlaneMesh subobject **/
 	FORCEINLINE class UStaticMeshComponent* GetPlaneMesh() const { return PlaneMesh; }

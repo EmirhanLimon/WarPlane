@@ -30,7 +30,7 @@ AWarPlaneGamePawn::AWarPlaneGamePawn()
 	// Create a spring arm component
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm0"));
 	SpringArm->SetupAttachment(RootComponent);	// Attach SpringArm to RootComponent
-	SpringArm->TargetArmLength = 160.0f; // The camera follows at this distance behind the character	
+	SpringArm->TargetArmLength = 500.0f; // The camera follows at this distance behind the character	
 	SpringArm->SocketOffset = FVector(0.f,0.f,60.f);
 	SpringArm->bEnableCameraLag = false;	// Do not allow camera to lag
 	SpringArm->CameraLagSpeed = 15.f;
@@ -51,6 +51,11 @@ AWarPlaneGamePawn::AWarPlaneGamePawn()
 
 	EngineControl = false;
 	OverHeating = false;
+
+	PitchValue = 0.f;
+	YawValue = 0.f;
+	RollValue = 0.f;
+	
 	
 }
 
@@ -100,12 +105,13 @@ void AWarPlaneGamePawn::SetupPlayerInputComponent(class UInputComponent* PlayerI
 	
 	PlayerInputComponent->BindAxis("EngineBoost", this, &AWarPlaneGamePawn::EngineBoostInput);
 	PlayerInputComponent->BindAxis("SlowDown", this, &AWarPlaneGamePawn::SlowDownInput);
-	PlayerInputComponent->BindAxis("MoveRight", this, &AWarPlaneGamePawn::MoveRightInput);
+	PlayerInputComponent->BindAxis("RightRotation", this, &AWarPlaneGamePawn::RightRotationInput);
+	//PlayerInputComponent->BindAxis("MoveRight", this, &AWarPlaneGamePawn::MoveRightInput);
 }
 
-void AWarPlaneGamePawn::MoveRightInput(float Val)
-{
-	// Target yaw speed is based on input
+//void AWarPlaneGamePawn::MoveRightInput(float Val)
+//{
+/*	// Target yaw speed is based on input
 	float TargetYawSpeed = (Val * TurnSpeed);
 
 	// Smoothly interpolate to target yaw speed
@@ -119,8 +125,8 @@ void AWarPlaneGamePawn::MoveRightInput(float Val)
 	float TargetRollSpeed = bIsTurning ? (CurrentYawSpeed * 0.5f) : (GetActorRotation().Roll * -2.f);
 
 	// Smoothly interpolate roll speed
-	CurrentRollSpeed = FMath::FInterpTo(CurrentRollSpeed, TargetRollSpeed, GetWorld()->GetDeltaSeconds(), 2.f);
-}
+	CurrentRollSpeed = FMath::FInterpTo(CurrentRollSpeed, TargetRollSpeed, GetWorld()->GetDeltaSeconds(), 2.f); */
+//}
 
 void AWarPlaneGamePawn::EngineBoostInput(float Val)
 {
@@ -147,7 +153,7 @@ void AWarPlaneGamePawn::SlowDownInput(float Val)
 {
 	if(Val != 0)
 	{
-		if(CurrentForwardSpeed >= MinSpeed)
+		if(CurrentForwardSpeed > MinSpeed)
 		{
 			CurrentForwardSpeed = CurrentForwardSpeed - (Val*ChangeValue);
 		}
@@ -159,6 +165,57 @@ void AWarPlaneGamePawn::SlowDownInput(float Val)
 	else
 	{
 		if(CurrentForwardSpeed < 10000) CurrentForwardSpeed += ChangeValue;
+	}
+}
+
+void AWarPlaneGamePawn::RightRotationInput(float Val)
+{
+	FRotator NewRotation = FRotator(GetActorRotation());
+	FRotator NewCameraRotation = FRotator(Camera->GetSocketRotation("None"));
+	if(Val == 1)
+	{
+		if(NewRotation.Roll <= 80)
+		{
+			NewRotation.Yaw = NewRotation.Yaw + (Val/50);
+			NewRotation.Roll = NewRotation.Roll + Val;
+			SetActorRotation(NewRotation);
+			NewCameraRotation.Roll = 0;
+			Camera->SetWorldRotation(NewCameraRotation);
+		}
+	}
+
+	if(Val == -1)
+	{
+		if(NewRotation.Roll >= -80)
+		{
+			NewRotation.Yaw = NewRotation.Yaw + (Val/50);
+			NewRotation.Roll = NewRotation.Roll + Val;
+			SetActorRotation(NewRotation);
+			NewCameraRotation.Roll = 0;
+			Camera->SetWorldRotation(NewCameraRotation);
+		}
+	}
+	if(Val == 0)
+	{
+		if(NewRotation.Roll > 1)
+		{
+			NewRotation.Roll = NewRotation.Roll - 1;
+			SetActorRotation(NewRotation);
+			NewCameraRotation.Roll = 0;
+			NewCameraRotation.Yaw = NewCameraRotation.Yaw + 0.02f;
+			Camera->SetWorldRotation(NewCameraRotation);
+			GEngine->AddOnScreenDebugMessage(-1,1.0f,FColor::Red,TEXT("sadsa"));
+		}
+		if(NewRotation.Roll < -1)
+		{
+			NewRotation.Roll = NewRotation.Roll + 1;
+			SetActorRotation(NewRotation);	
+			NewCameraRotation.Roll = 0;
+			NewCameraRotation.Yaw = NewCameraRotation.Yaw - 0.02f;
+			Camera->SetWorldRotation(NewCameraRotation);
+			GEngine->AddOnScreenDebugMessage(-1,1.0f,FColor::Red,TEXT("Deneme"));
+		}
+		
 	}
 }
 
